@@ -18,7 +18,7 @@ public class QuizActivity extends AppCompatActivity {
     private Button mFalseButton;
     private Button mNextButton;
     private Button mPreviousButton;
-    private Boolean mIsButtonEnable;
+    private Boolean mIsButtonEnable = true;
     private TextView mQuestionTextView;
     private int mNumberOfCorrectedAnswer = 0;
     private static final String TAG = "QuizActivity";
@@ -51,7 +51,7 @@ public class QuizActivity extends AppCompatActivity {
 
         Log.d(TAG, "onCreate(Bundle) called");
 
-        if(savedInstanceState != null) {
+        if (savedInstanceState != null) {
             mCurrentIndex = savedInstanceState.getInt(KEY_INDEX, 0);
         }
 
@@ -59,23 +59,23 @@ public class QuizActivity extends AppCompatActivity {
         updateQuestion();
 
         mQuestionTextView.setOnClickListener(view -> {
-            mCurrentIndex= (mCurrentIndex + 1) % mQuestionBank.length;
+            mCurrentIndex = (mCurrentIndex + 1) % mQuestionBank.length;
             updateQuestion();
         });
 
         mTrueButton = (Button) findViewById(R.id.true_button);
         mFalseButton = (Button) findViewById(R.id.false_button);
 
-        if(savedInstanceState != null) {
+        if (savedInstanceState != null) {
             mIsButtonEnable = savedInstanceState.getBoolean(BUTTON_ENABLE, true);
-            setButtonStatus(mIsButtonEnable,mTrueButton,mFalseButton);
+            setButtonStatus(mIsButtonEnable, mTrueButton, mFalseButton);
         }
 
         mTrueButton.setOnClickListener(view -> {
             checkAnswer(true);
             mIsButtonEnable = false;
-            setButtonStatus(mIsButtonEnable,mTrueButton,mFalseButton);
-            if(mCurrentIndex == (mQuestionBank.length - 1)) {
+            setButtonStatus(mIsButtonEnable, mTrueButton, mFalseButton);
+            if (mCurrentIndex == (mQuestionBank.length - 1)) {
                 getScore();
             }
         });
@@ -84,17 +84,17 @@ public class QuizActivity extends AppCompatActivity {
         mFalseButton.setOnClickListener(view -> {
             checkAnswer(false);
             mIsButtonEnable = false;
-            setButtonStatus(mIsButtonEnable,mTrueButton,mFalseButton);
-            if(mCurrentIndex == (mQuestionBank.length - 1)) {
+            setButtonStatus(mIsButtonEnable, mTrueButton, mFalseButton);
+            if (mCurrentIndex == (mQuestionBank.length - 1)) {
                 getScore();
             }
         });
 
         mNextButton = (Button) findViewById(R.id.next_button);
         mNextButton.setOnClickListener(view -> {
-            mCurrentIndex= (mCurrentIndex + 1) % mQuestionBank.length;
+            mCurrentIndex = (mCurrentIndex + 1) % mQuestionBank.length;
             updateQuestion();
-            setButtonStatus(true,mTrueButton,mFalseButton);
+            setButtonStatus(true, mTrueButton, mFalseButton);
         });
 
         mPreviousButton = (Button) findViewById(R.id.previous_button);
@@ -154,14 +154,14 @@ public class QuizActivity extends AppCompatActivity {
         Toast.makeText(QuizActivity.this, messageResID, Toast.LENGTH_SHORT).show();
     }
 
-    private void setButtonStatus(boolean buttonStatus, @NonNull Button ... bs){
-        for(Button b : bs ) {
+    private void setButtonStatus(boolean buttonStatus, @NonNull Button... bs) {
+        for (Button b : bs) {
             b.setEnabled(buttonStatus);
         }
     }
 
     private void getScore() {
-            double score = ((double) mNumberOfCorrectedAnswer)/((double) mQuestionBank.length) * 100;
-            Toast.makeText(QuizActivity.this, String.format("Score: %2.2f%%", score),Toast.LENGTH_LONG).show();
+        double score = ((double) mNumberOfCorrectedAnswer) / ((double) mQuestionBank.length) * 100;
+        Toast.makeText(QuizActivity.this, String.format("Score: %2.2f%%", score), Toast.LENGTH_LONG).show();
     }
 }
