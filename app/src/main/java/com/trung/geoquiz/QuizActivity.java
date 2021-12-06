@@ -18,9 +18,12 @@ public class QuizActivity extends AppCompatActivity {
     private Button mFalseButton;
     private Button mNextButton;
     private Button mPreviousButton;
+    private Boolean mIsButtonEnable;
     private TextView mQuestionTextView;
+    private int mNumberOfCorrectedAnswer = 0;
     private static final String TAG = "QuizActivity";
     private static final String KEY_INDEX = "index";
+    private static final String BUTTON_ENABLE = "enable";
 
     private Question[] mQuestionBank = new Question[]{
             new Question(R.string.question_australia, true),
@@ -38,6 +41,7 @@ public class QuizActivity extends AppCompatActivity {
         super.onSaveInstanceState(savedInstanceState);
         Log.i(TAG, "onSaveInstanceState");
         savedInstanceState.putInt(KEY_INDEX, mCurrentIndex);
+        savedInstanceState.putBoolean(BUTTON_ENABLE, mIsButtonEnable);
     }
 
     @Override
@@ -60,19 +64,37 @@ public class QuizActivity extends AppCompatActivity {
         });
 
         mTrueButton = (Button) findViewById(R.id.true_button);
+        mFalseButton = (Button) findViewById(R.id.false_button);
+
+        if(savedInstanceState != null) {
+            mIsButtonEnable = savedInstanceState.getBoolean(BUTTON_ENABLE, true);
+            setButtonStatus(mIsButtonEnable,mTrueButton,mFalseButton);
+        }
+
         mTrueButton.setOnClickListener(view -> {
             checkAnswer(true);
+            mIsButtonEnable = false;
+            setButtonStatus(mIsButtonEnable,mTrueButton,mFalseButton);
+            if(mCurrentIndex == (mQuestionBank.length - 1)) {
+                getScore();
+            }
         });
 
-        mFalseButton = (Button) findViewById(R.id.false_button);
+
         mFalseButton.setOnClickListener(view -> {
             checkAnswer(false);
+            mIsButtonEnable = false;
+            setButtonStatus(mIsButtonEnable,mTrueButton,mFalseButton);
+            if(mCurrentIndex == (mQuestionBank.length - 1)) {
+                getScore();
+            }
         });
 
         mNextButton = (Button) findViewById(R.id.next_button);
         mNextButton.setOnClickListener(view -> {
             mCurrentIndex= (mCurrentIndex + 1) % mQuestionBank.length;
             updateQuestion();
+            setButtonStatus(true,mTrueButton,mFalseButton);
         });
 
         mPreviousButton = (Button) findViewById(R.id.previous_button);
@@ -124,10 +146,22 @@ public class QuizActivity extends AppCompatActivity {
 
         if (userPressedTrue == answerIsTrue) {
             messageResID = R.string.correct_toast;
+            mNumberOfCorrectedAnswer++;
         } else {
             messageResID = R.string.incorrect_toast;
         }
 
         Toast.makeText(QuizActivity.this, messageResID, Toast.LENGTH_SHORT).show();
+    }
+
+    private void setButtonStatus(boolean buttonStatus, @NonNull Button ... bs){
+        for(Button b : bs ) {
+            b.setEnabled(buttonStatus);
+        }
+    }
+
+    private void getScore() {
+            double score = ((double) mNumberOfCorrectedAnswer)/((double) mQuestionBank.length) * 100;
+            Toast.makeText(QuizActivity.this, String.format("Score: %2.2f%%", score),Toast.LENGTH_LONG).show();
     }
 }
