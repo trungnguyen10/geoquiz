@@ -1,13 +1,13 @@
 package com.trung.geoquiz;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.content.Intent;
 import android.os.Bundle;
 
 import android.util.Log;
-import android.view.Gravity;
-import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -18,12 +18,16 @@ public class QuizActivity extends AppCompatActivity {
     private Button mFalseButton;
     private Button mNextButton;
     private Button mPreviousButton;
+    private Button mCheatButton;
+    private Boolean mIsCheater = false;
     private Boolean mIsButtonEnable = true;
     private TextView mQuestionTextView;
     private int mNumberOfCorrectedAnswer = 0;
     private static final String TAG = "QuizActivity";
     private static final String KEY_INDEX = "index";
-    private static final String BUTTON_ENABLE = "enable";
+    private static final String KEY_BUTTON_ENABLE = "button enable";
+    private static final String KEY_IS_CHEATER = "is cheater";
+    private static final int REQUEST_CODE_CHEAT = 0;
 
     private Question[] mQuestionBank = new Question[]{
             new Question(R.string.question_australia, true),
@@ -41,7 +45,8 @@ public class QuizActivity extends AppCompatActivity {
         super.onSaveInstanceState(savedInstanceState);
         Log.i(TAG, "onSaveInstanceState");
         savedInstanceState.putInt(KEY_INDEX, mCurrentIndex);
-        savedInstanceState.putBoolean(BUTTON_ENABLE, mIsButtonEnable);
+        savedInstanceState.putBoolean(KEY_BUTTON_ENABLE, mIsButtonEnable);
+        savedInstanceState.putBoolean(KEY_IS_CHEATER, mIsCheater);
     }
 
     @Override
@@ -53,6 +58,7 @@ public class QuizActivity extends AppCompatActivity {
 
         if (savedInstanceState != null) {
             mCurrentIndex = savedInstanceState.getInt(KEY_INDEX, 0);
+            mIsCheater = savedInstanceState.getBoolean(KEY_IS_CHEATER);
         }
 
         mQuestionTextView = (TextView) findViewById(R.id.question_text_view);
@@ -67,7 +73,7 @@ public class QuizActivity extends AppCompatActivity {
         mFalseButton = (Button) findViewById(R.id.false_button);
 
         if (savedInstanceState != null) {
-            mIsButtonEnable = savedInstanceState.getBoolean(BUTTON_ENABLE, true);
+            mIsButtonEnable = savedInstanceState.getBoolean(KEY_BUTTON_ENABLE, true);
             setButtonStatus(mIsButtonEnable, mTrueButton, mFalseButton);
         }
 
@@ -79,7 +85,6 @@ public class QuizActivity extends AppCompatActivity {
                 getScore();
             }
         });
-
 
         mFalseButton.setOnClickListener(view -> {
             checkAnswer(false);
@@ -95,12 +100,21 @@ public class QuizActivity extends AppCompatActivity {
             mCurrentIndex = (mCurrentIndex + 1) % mQuestionBank.length;
             updateQuestion();
             setButtonStatus(true, mTrueButton, mFalseButton);
+            mIsCheater = false;
         });
 
         mPreviousButton = (Button) findViewById(R.id.previous_button);
         mPreviousButton.setOnClickListener(view -> {
             mCurrentIndex = ((mCurrentIndex - 1) % mQuestionBank.length + mQuestionBank.length) % mQuestionBank.length;
             updateQuestion();
+        });
+
+        mCheatButton = (Button) findViewById(R.id.cheat_button);
+        mCheatButton.setOnClickListener(view -> {
+            //Start CheatActivity
+            boolean answerIsTrue = mQuestionBank[mCurrentIndex].isAnswerTrue();
+            Intent intent = CheatActivity.newIntent(QuizActivity.this, answerIsTrue);
+            startActivityForResult(intent, REQUEST_CODE_CHEAT);
         });
     }
 
@@ -134,6 +148,20 @@ public class QuizActivity extends AppCompatActivity {
         Log.d(TAG, "onResume() called");
     }
 
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (resultCode != RESULT_OK) {
+            return;
+        }
+        if (requestCode == REQUEST_CODE_CHEAT) {
+            if (data == null) {
+                return;
+            }
+            mIsCheater = CheatActivity.wasAnswerShown(data);
+        }
+    }
+
     private void updateQuestion() {
         int question = mQuestionBank[mCurrentIndex].getTextResID();
         mQuestionTextView.setText(question);
@@ -144,11 +172,15 @@ public class QuizActivity extends AppCompatActivity {
 
         int messageResID = 0;
 
-        if (userPressedTrue == answerIsTrue) {
-            messageResID = R.string.correct_toast;
-            mNumberOfCorrectedAnswer++;
+        if (mIsCheater) {
+            messageResID = R.string.judgment_toast;
         } else {
-            messageResID = R.string.incorrect_toast;
+            if (userPressedTrue == answerIsTrue) {
+                messageResID = R.string.correct_toast;
+                mNumberOfCorrectedAnswer++;
+            } else {
+                messageResID = R.string.incorrect_toast;
+            }
         }
 
         Toast.makeText(QuizActivity.this, messageResID, Toast.LENGTH_SHORT).show();

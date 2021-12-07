@@ -37,30 +37,31 @@
             android:text="@string/false_button" />
     </LinearLayout>
 
-    <RelativeLayout
-        android:layout_width="match_parent"
+
+    <Button
+        android:id="@+id/previous_button"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_gravity="bottom"
-        android:orientation="horizontal">
+        android:layout_gravity="bottom|left"
+        android:drawableLeft="@drawable/arrow_left"
+        android:drawablePadding="4dp"
+        android:text="@string/previous_button" />
 
-        <Button
-            android:id="@+id/previous_button"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_alignParentLeft="true"
-            android:drawableLeft="@drawable/arrow_left"
-            android:drawablePadding="4dp"
-            android:text="@string/previous_button"/>
+    <Button
+        android:id="@+id/cheat_button"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom|center_horizontal"
+        android:text="@string/cheat_button" />
 
-        <Button
-            android:id="@+id/next_button"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_alignParentRight="true"
-            android:drawableRight="@drawable/arrow_right"
-            android:drawablePadding="4dp"
-            android:text="@string/next_button" />
+    <Button
+        android:id="@+id/next_button"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom|right"
+        android:drawableRight="@drawable/arrow_right"
+        android:drawablePadding="4dp"
+        android:text="@string/next_button" />
 
-    </RelativeLayout>
 
 </FrameLayout>
